@@ -1,8 +1,10 @@
 const graphql = require('graphql');
+const { GraphQLDate, GraphQLTime } = require('graphql-iso-date');
 
 const Dish = require('./models/dishes');
 const Chef = require('./models/chef');
 const Customer = require('./models/customer');
+const Order = require('./models/order');
 
 const {
     GraphQLObjectType,
@@ -55,25 +57,52 @@ const ChefType = new GraphQLObjectType({
         },
     }),
 });
-
+const OrderType = new GraphQLObjectType({
+    name: ' Order',
+    fields: () => ({
+        timeOrderPlaced: {
+            type: GraphQLTime,
+        },
+        estimatedDeliveryTime: {
+            type: GraphQLTime,
+        },
+        orderCost: {
+            type: GraphQLFloat,
+        },
+        deliveryLocation: {
+            type: GraphQLString,
+        },
+        deliveryLocation: {
+            type: GraphQLString,
+        },
+    }),
+});
 const CustomerType = new GraphQLObjectType({
     name: 'Customer',
     fields: () => ({
         id: {
             type: GraphQLID,
         },
-        name: {
+        firstName: {
             type: GraphQLString,
         },
-        orderId: {
-            type: GraphQLFloat,
+        lastName: {
+            type: GraphQLString,
         },
-        orderCost: {
-            type: GraphQLFloat,
+        order: {
+            type: String,
         },
         location: {
             type: GraphQLString,
         },
+        order: {
+            type: new GraphQLList(OrderType),
+            resolve(parent, args) {
+                return Order.find({
+                    chefsId: parent.id
+                })
+            }
+        }
     }),
 });
 

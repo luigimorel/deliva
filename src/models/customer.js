@@ -6,8 +6,9 @@ const customerSchema = new Schema({
     firstName: String,
     lastName: String,
     phoneNumber: String,
-    emailAddress: string,
+    emailAddress: String,
     location: String,
+    order: String
 });
 
 module.exports = mongo.model('Customer', customerSchema);

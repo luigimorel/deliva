@@ -1,11 +1,14 @@
 const mongo = require('mongoose');
+const { GraphQLDate } = require('graphql-iso-date');
 
 const Schema = mongo.Schema;
 
 const orderSchema = new Schema({
-    orderTime: String,
+    timeOrderPlaced,
     orderCost: Number,
-    orderTime: String,
+    estimatedDeliveryTime,
+    deliveryDistance: Number,
+    deliveryLocation: String,
 });
 
 module.exports = mongo.model('Order', orderSchema);
