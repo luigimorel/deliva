@@ -57,6 +57,7 @@ const ChefType = new GraphQLObjectType({
         },
     }),
 });
+
 const OrderType = new GraphQLObjectType({
     name: ' Order',
     fields: () => ({
@@ -72,11 +73,18 @@ const OrderType = new GraphQLObjectType({
         deliveryLocation: {
             type: GraphQLString,
         },
-        deliveryLocation: {
-            type: GraphQLString,
+        deliveryDistance: {
+            type: GraphQLFloat,
+        },
+        customer: {
+            type: CustomerType,
+            resolve(parent, args) {
+                return Customer.findById(parent.customerId);
+            },
         },
     }),
 });
+
 const CustomerType = new GraphQLObjectType({
     name: 'Customer',
     fields: () => ({
@@ -99,10 +107,10 @@ const CustomerType = new GraphQLObjectType({
             type: new GraphQLList(OrderType),
             resolve(parent, args) {
                 return Order.find({
-                    chefsId: parent.id
-                })
-            }
-        }
+                    orderId: parent.id,
+                });
+            },
+        },
     }),
 });
 
@@ -177,7 +185,7 @@ const Mutation = new GraphQLObjectType({
                 type: new GraphQLNonNull(GraphQLString),
             },
             rating: {
-                type: new GraphQLNonNull(GraphQLBoolean),
+                type: new GraphQLNonNull(GraphQLFloat),
             },
         },
         resolve(parent, args) {
@@ -186,6 +194,42 @@ const Mutation = new GraphQLObjectType({
                 rating: args.rating,
             });
             return chef.save();
+        },
+    },
+    addOrder: {
+        args: {
+            timeOrderPlaced: {
+                type: new GraphQLNonNull(GraphQLTime),
+            },
+            orderCost: {
+                type: GraphQLNonNull(GraphQLFloat),
+            },
+            orderId: {
+                type: GraphQLNonNull(GraphQLFloat),
+            },
+            customerId: {
+                type: GraphQLNonNull(GraphQLFloat),
+            },
+            estimatedDeliveryTime: {
+                type: GraphQLNonNull(GraphQLTime),
+            },
+            deliveryDistance: {
+                type: GraphQLNonNull(GraphQLFloat),
+            },
+            deliveryLocation: {
+                type: GraphQLNonNull(GraphQLString),
+            },
+        },
+        resolve(parent, args) {
+            let order = new Order({
+                timeOrderPlaced: args.timeOrderPlaced,
+                orderCost: args.orderCost,
+                orderId: args.orderId,
+                customerId: args.customerId,
+                estimatedDeliveryTime: args.estimatedDeliveryTime,
+                deliveryDistance: args.deliveryDistance,
+                deliveryLocation: args.deliveryLocation,
+            });
         },
     },
 });

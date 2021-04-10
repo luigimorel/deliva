@@ -5,7 +5,9 @@ const Schema = mongo.Schema;
 
 const orderSchema = new Schema({
     timeOrderPlaced,
-    orderCost: Number,
+    orderCost: Number, 
+    orderId: Number,
+    customerId: Number,
     estimatedDeliveryTime,
     deliveryDistance: Number,
     deliveryLocation: String,
