@@ -10,6 +10,7 @@ const orderSchema = new Schema({
     customerId: Number,
     estimatedDeliveryTime,
     deliveryDistance: Number,
+    delivered: Boolean,
     deliveryLocation: String,
 });
 

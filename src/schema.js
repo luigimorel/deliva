@@ -1,15 +1,16 @@
 const graphql = require('graphql');
-const { GraphQLDate, GraphQLTime } = require('graphql-iso-date');
+const { GraphQLDateTime } = require('graphql-iso-date');
 
 const Dish = require('./models/dishes');
 const Chef = require('./models/chef');
 const Customer = require('./models/customer');
 const Order = require('./models/order');
+const Rider = require('./models/riders');
 
 const {
     GraphQLObjectType,
     GraphQLString,
-    GraphQLFloat,
+    GraphQLInt,
     GraphQLBoolean,
     GraphQLSchema,
     GraphQLID,
@@ -46,7 +47,7 @@ const ChefType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
-        rating: { type: GraphQLFloat },
+        rating: { type: GraphQLInt },
         dish: {
             type: new GraphQLList(DishType),
             resolve(parent, args) {
@@ -62,19 +63,22 @@ const OrderType = new GraphQLObjectType({
     name: ' Order',
     fields: () => ({
         timeOrderPlaced: {
-            type: GraphQLTime,
+            type: GraphQLDateTime,
         },
         estimatedDeliveryTime: {
-            type: GraphQLTime,
+            type: GraphQLDateTime,
         },
         orderCost: {
-            type: GraphQLFloat,
+            type: GraphQLInt,
         },
         deliveryLocation: {
             type: GraphQLString,
         },
         deliveryDistance: {
-            type: GraphQLFloat,
+            type: graphql.GraphQLInt,
+        },
+        delivered: {
+            type: GraphQLBoolean,
         },
         customer: {
             type: CustomerType,
@@ -98,10 +102,16 @@ const CustomerType = new GraphQLObjectType({
             type: GraphQLString,
         },
         order: {
-            type: String,
+            type: GraphQLString,
         },
         location: {
             type: GraphQLString,
+        },
+        phoneNumber: {
+            type: GraphQLString,
+        },
+        emailAddress: {
+            type: GraphQLSchema,
         },
         order: {
             type: new GraphQLList(OrderType),
@@ -114,6 +124,28 @@ const CustomerType = new GraphQLObjectType({
     }),
 });
 
+const RiderType = new GraphQLObjectType({
+    name: 'Rider',
+    fields: () => ({
+        id: {
+            type: GraphQLID,
+        },
+        firstName: {
+            type: GraphQLString,
+        },
+        lastName: {
+            type: GraphQLString,
+        },
+        orderDelivered: {
+            type: GraphQLString,
+        },
+        phoneNumber: {
+            type: GraphQLInt,
+        },
+    }),
+});
+
+// Root query
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType ',
     fields: {
@@ -151,9 +183,76 @@ const RootQuery = new GraphQLObjectType({
                 return Chef.find({});
             },
         },
+        customer: {
+            type: CustomerType,
+            args: {
+                id: {
+                    type: GraphQLID,
+                },
+            },
+            resolve(parent, args) {
+                return Customer.findById(args.id);
+            },
+        },
+        customers: {
+            type: CustomerType,
+            args: {
+                id: {
+                    type: GraphQLID,
+                },
+            },
+            resolve(parent, args) {
+                return Customer.find({});
+            },
+        },
+        riders: {
+            type: RiderType,
+            args: {
+                id: {
+                    type: GraphQLID,
+                },
+            },
+            resolve(parent, args) {
+                return Rider.find({});
+            },
+        },
+        rider: {
+            type: RiderType,
+            args: {
+                id: {
+                    type: GraphQLID,
+                },
+            },
+            resolve(parent, args) {
+                return Rider.findById(args.id);
+            },
+        },
+        order: {
+            type: OrderType,
+            args: {
+                id: {
+                    type: GraphQLID,
+                },
+            },
+            resolve(parent, args) {
+                return Order.findById(args.id);
+            },
+        },
+        orders: {
+            type: OrderType,
+            args: {
+                id: {
+                    type: GraphQLID,
+                },
+            },
+            resolve(parent, args) {
+                return Order.find({});
+            },
+        },
     },
 });
 
+// Mutations
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
@@ -185,7 +284,7 @@ const Mutation = new GraphQLObjectType({
                 type: new GraphQLNonNull(GraphQLString),
             },
             rating: {
-                type: new GraphQLNonNull(GraphQLFloat),
+                type: new GraphQLNonNull(GraphQLInt),
             },
         },
         resolve(parent, args) {
@@ -199,22 +298,25 @@ const Mutation = new GraphQLObjectType({
     addOrder: {
         args: {
             timeOrderPlaced: {
-                type: new GraphQLNonNull(GraphQLTime),
+                type: new GraphQLNonNull(GraphQLDateTime),
             },
             orderCost: {
-                type: GraphQLNonNull(GraphQLFloat),
+                type: GraphQLNonNull(GraphQLInt),
             },
             orderId: {
-                type: GraphQLNonNull(GraphQLFloat),
+                type: GraphQLNonNull(GraphQLInt),
             },
             customerId: {
-                type: GraphQLNonNull(GraphQLFloat),
+                type: GraphQLNonNull(GraphQLInt),
             },
             estimatedDeliveryTime: {
-                type: GraphQLNonNull(GraphQLTime),
+                type: GraphQLNonNull(GraphQLDateTime),
             },
             deliveryDistance: {
-                type: GraphQLNonNull(GraphQLFloat),
+                type: GraphQLNonNull(GraphQLInt),
+            },
+            delivered: {
+                type: GraphQLNonNull(GraphQLBoolean),
             },
             deliveryLocation: {
                 type: GraphQLNonNull(GraphQLString),
@@ -230,7 +332,48 @@ const Mutation = new GraphQLObjectType({
                 deliveryDistance: args.deliveryDistance,
                 deliveryLocation: args.deliveryLocation,
             });
+            return order.save();
         },
+    },
+    addCustomer: {
+        args: {
+            firstName: {
+                type: GraphQLNonNull(GraphQLString),
+            },
+            lastName: {
+                type: GraphQLNonNull(GraphQLString),
+            },
+            order: {
+                type: GraphQLNonNull(GraphQLString),
+            },
+            location: {
+                type: GraphQLNonNull(GraphQLString),
+            },
+            phoneNumber: {
+                type: GraphQLNonNull(GraphQLString),
+            },
+            emailAddress: {
+                type: GraphQLNonNull(GraphQLString),
+            },
+            customerId: {
+                type: GraphQLNonNull(GraphQLInt),
+            },
+        },
+        resolve(parent, args) {
+            let customer = new Customer({
+                firstName: args.firstName,
+                lastName: args.lastName,
+                order: args.order,
+                location: args.order,
+                phoneNumber: args.phoneNumber,
+                emailAddress: args.emailAddress,
+                customerId: args.customerId,
+            });
+            return customer.save();
+        },
+    },
+    addRider: {
+        args: {},
     },
 });
 
