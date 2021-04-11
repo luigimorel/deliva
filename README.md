@@ -46,3 +46,7 @@ Then
 ```
 2. node src/app.js
 ```
+
+#### PS
+
+Please note that this is not a production ready API. So many things are lacking.
